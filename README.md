@@ -18,7 +18,7 @@ Setting up the system is just 5 steps
 
 # Implement a web api endpoint returning a DataTransferObject
 
-# Learn how to config the data dash website (4 environmental variable, thats it)
+# Learn how to config the data dash website
 
 # Setup the data dash website
 
