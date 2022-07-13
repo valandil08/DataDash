@@ -7,7 +7,7 @@ By making the UI layout part of the data transfer object the dashboard receives 
 Common senarios that can cause this are are: database refactors, code restructuring, changing how a system works or large code merges from multiple branches.
 All of these risk breaking the dashboards monitoring them if the code generating the data for the dashboard is external to the system being monitored.
 
-Setting up the system is just 5 steps
+Setting up the data dash is just 5 steps
 - Learning how the DataTransferObject class and its subclasses work
 - Implement a web api endpoint returning a DataTransferObject
 - Learn how to config the data dash website (4 environmental variable, thats it)
@@ -16,10 +16,20 @@ Setting up the system is just 5 steps
 
 # Learning how the DataTransferObject class and its subclasses work
 
+to add
+
 # Implement a web api endpoint returning a DataTransferObject
+
+to add
 
 # Learn how to config the data dash website
 
+to add
+
 # Setup the data dash website
 
+to add
+
 # Deploy it pointing at the web api endpoint created earlier
+
+to add
