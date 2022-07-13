@@ -161,8 +161,8 @@
                     else
                     {
                         // this will generate a black and white checker board pattern for blank cells
-                        string blankCellStyle = (x + y) % 2 == 0 ? "background-color:black" : "background-color:white";
-                        <td colspan="1" rowspan="1" style=@blankCellStyle> <span>&nbsp;</span> </td>
+                        string blankCellStyle = "text-align:center;" +( (x + y) % 2 == 0 ? "background-color:black;color:white" : "background-color:white;color:black");
+                        <td colspan="1" rowspan="1" style=@blankCellStyle> <span>@x/@y</span> </td>
                     }
                 }
             </tr>
