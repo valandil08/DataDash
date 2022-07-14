@@ -16,6 +16,7 @@ Setting up the data dash is just 5 steps
 
 # Learning how the DataTransferObject class and its subclasses work
 
+```C#
 
 DataTransferObject dashboardData = new DataTransferObject();
 dashboardData.NumberOfColumns = 16;
@@ -71,7 +72,7 @@ dashboardData.DisplayTables.Add(new DisplayTable()
 });
 
 dashboardData.HostingInfoFooter = new HostingInfoFooter(17, 17);
-            
+```        
 # Implement a web api endpoint returning a DataTransferObject
 
 to add
