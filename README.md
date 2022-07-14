@@ -63,7 +63,7 @@ dashboardData.DisplayTables.Add(new DisplayTable()
       new TextElement("Col 2"),
       new TextElement("Col 3")
    },
-   dataRows = new List<TextElement[]>
+   dataRows = new List<TextElement[]>()
    {
       new TextElement[]{ new TextElement("col 1"), new TextElement("col 2"), new TextElement("col 3") },
       new TextElement[]{ new TextElement("col 1"), new TextElement("col 2"), new TextElement("col 3") }
