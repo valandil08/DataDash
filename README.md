@@ -68,7 +68,7 @@ dashboardData.DisplayTables.Add(new DisplayTable()
       new TextElement[]{ new TextElement("col 1"), new TextElement("col 2"), new TextElement("col 3") },
       new TextElement[]{ new TextElement("col 1"), new TextElement("col 2"), new TextElement("col 3") }
       new TextElement[]{ new TextElement("col 1"), new TextElement("col 2"), new TextElement("col 3") }
-   })
+   }
 });
 
 dashboardData.HostingInfoFooter = new HostingInfoFooter(17, 17);
