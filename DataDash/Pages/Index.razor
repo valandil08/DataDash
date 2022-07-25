@@ -1,6 +1,7 @@
 ﻿@using DataDash.Models;
 @using Newtonsoft.Json;
 @page "/"
+@page "/{pageName}"
 
 <PageTitle>Index</PageTitle>
 
@@ -87,10 +88,10 @@
                         {
                             int colspan = (row.BottomRightColumnNumber - row.TopLeftColumnNumber) + 1;
                             int rowspan = (row.BottomRightRowNumber - row.TopLeftRowNumber) + 1;
-                            string style = "text-align:" + (row.Align == null ? "center" : row.Align) + ";padding-left:20px;padding-right:20px;background-color:" + dashboardData.TitleRowBackgroundColour + ";" + GenerateBorderStyle(dashboardData.BorderColour, x, y, x + colspan - 1, y + rowspan - 1) + ";" +((row.Title == null || row.Title.Colour == "default") ? "" : "color:" + row.Title.Colour);
+                            string style = "text-align:" + (row.Align == null ? "center" : row.Align) + ";padding-left:20px;padding-right:20px;background-color:" + dashboardData.TitleRowBackgroundColour + ";" + GenerateBorderStyle(dashboardData.BorderColour, x, y, x + colspan - 1, y + rowspan - 1) + ";" + ((row.Title == null || row.Title.Colour == "default") ? "" : "color:" + row.Title.Colour);
                             <td colspan=@colspan rowspan=@rowspan style=@style>
                                 <span>
-                                    <strong>@row.Title.Text</strong>
+                                    <strong>@row.Title?.Text</strong>
                                 </span>
                             </td>
                             continue;
@@ -109,7 +110,7 @@
                                             <tr style="display:flex;flex-direction: row;align-items: stretch;width:100%;">
                                                 @for (int i = 0; i < displayTable.headers.Count(); i++)
                                                 {
-                                                    string style = "padding:10px;width:100%;vertical-align:top;text-align:" + (i == 0 ? "left" : "right")+ (displayTable.headers[i].Colour == "default" ? "" :";color:"+displayTable.headers[i].Colour);
+                                                    string style = "padding:10px;width:100%;vertical-align:top;text-align:" + (i == 0 ? "left" : "right") + (displayTable.headers[i].Colour == "default" ? "" : ";color:" + displayTable.headers[i].Colour);
                                                     <td style=@style>@displayTable.headers[i].Text</td>
                                                 }
                                             </tr>
@@ -118,7 +119,7 @@
                                                 <tr style="display:flex;flex-direction: row;align-items: stretch;width:100%;">
                                                     @for (int i = 0; i < tableRow.Count(); i++)
                                                     {
-                                                        string style = "padding:10px;width:100%;vertical-align:top;text-align:" + (i == 0 ? "left" : "right") + (tableRow[i].Colour == "default" ? "" :";color:"+tableRow[i].Colour);
+                                                        string style = "padding:10px;width:100%;vertical-align:top;text-align:" + (i == 0 ? "left" : "right") + (tableRow[i].Colour == "default" ? "" : ";color:" + tableRow[i].Colour);
                                                         <td style=@style>@tableRow[i].Text</td>
                                                     }
                                                 </tr>
@@ -142,15 +143,15 @@
                                     <tr>
                                         @foreach (var element in singleReadOutRow.ReadOuts)
                                         {
-                                            string style = element.Title == null || element.Title.Colour == "default" ? "" : "color:" + element.Title.Colour; 
-                                            <td style=@style>@element.Title.Text</td>
+                                            string style = element.Title == null || element.Title.Colour == "default" ? "" : "color:" + element.Title.Colour;
+                                            <td style=@style>@element.Title?.Text</td>
                                         }
                                     </tr>
                                     <tr>
                                         @foreach (var element in singleReadOutRow.ReadOuts)
                                         {
                                             string style = element.Value == null || element.Value.Colour == "default" ? "" : "color:" + element.Value.Colour;
-                                            <td style=@style>@element.Value.Text</td>
+                                            <td style=@style>@element.Value?.Text</td>
                                         }
                                     </tr>
                                 </table>
@@ -160,9 +161,11 @@
                     }
                     else
                     {
+                        string xValue = "C" + x;
+                        string yValue = "R" + y;
                         // this will generate a black and white checker board pattern for blank cells
-                        string blankCellStyle = "text-align:center;" +( (x + y) % 2 == 0 ? "background-color:black;color:white" : "background-color:white;color:black");
-                        <td colspan="1" rowspan="1" style=@blankCellStyle> <span>@x/@y</span> </td>
+                        string blankCellStyle = "text-align:center;" + ((x + y) % 2 == 0 ? "background-color:black;color:white" : "background-color:white;color:black");
+                        <td colspan="1" rowspan="1" style=@blankCellStyle> <span>@xValue @yValue</span> </td>
                     }
                 }
             </tr>
@@ -178,6 +181,9 @@
 }
 
 @code {
+    [Parameter]
+    public string? pageName { get; set; }
+
     private static System.Timers.Timer? updateTimer = null;
 
     private DataTransferObject dashboardData = new DataTransferObject();
@@ -185,8 +191,8 @@
     private int updateIntervalInSeconds = GetUpdateIntervalInSeconds();
     private string? errorMessage = "API Call Failed";
 
-    public Index()
-    {
+    protected override void OnInitialized()
+    {        
         // get data for inital page load
         FetchData();
 
@@ -198,8 +204,25 @@
 
     public void FetchData(object? source = null, System.Timers.ElapsedEventArgs? e = null)
     {
-        dashboardData = GlobalData.DashboardData;
-        errorMessage = GlobalData.ErrorMessage;
+        if (pageName == null)
+        {
+            pageName = "default";
+        }
+        else
+        {
+            pageName = pageName.ToLower();
+        }
+
+        if (!GlobalData.PageData.ContainsKey(pageName))
+        {
+            dashboardData = new DataTransferObject();
+            errorMessage = "No data for page name";
+        }
+        else
+        {
+            dashboardData = GlobalData.PageData.GetValueOrDefault(pageName).DashboardData;
+            errorMessage = GlobalData.PageData.GetValueOrDefault(pageName).ErrorMessage;
+        }
 
         if (dashboardData.ErrorMessage != null)
         {
