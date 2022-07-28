@@ -10,6 +10,7 @@ namespace DataDash
     public class PageInstance
     {
         public DataTransferObject DashboardData = new DataTransferObject();
+        public string[] ProxyScreens = new string[0];
         public string? ErrorMessage = null;
     }
 }

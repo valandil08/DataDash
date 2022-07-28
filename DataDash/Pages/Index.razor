@@ -5,181 +5,220 @@
 
 <PageTitle>Index</PageTitle>
 
-<table style="border-collapse:collapse;width:100%;height:100%;padding:0px;margin:0px;position:absolute;left:0px;top:0px;table-layout:fixed;border-color:@dashboardData.BorderColour;color:@dashboardData.TextColour">
-    @{
-        bool[,] cellsCovered = new bool[dashboardData.NumberOfColumns, dashboardData.NumberOfRows];
-
-        for (int x = 0; x < cellsCovered.GetLength(0); x++)
+@if (dashboardData == null)
+{
+    string[] proxies = GlobalData.PageData[pageName.ToLower()].ProxyScreens;
+    for (int i = 0; i < 4 && i < proxies.Length; i++)
+    {
+        if (proxies[i].ToLower() != pageName.ToLower())
         {
-            for (int y = 0; y < cellsCovered.GetLength(1); y++)
+            string src = "https://localhost:7094" + proxies[i] == "default" ? "" : proxies[i];
+            string style = "";
+            switch (i)
             {
-                cellsCovered[x, y] = false;
+                case 0:
+                    style = "position:absolute;top:0px;left:0px;width:50%;height:50%";
+                    break;
+                case 1:
+                    style = "position:absolute;top:0px;right:0px;width:50%;height:50%";
+                    break;
+                case 2:
+                    style = "position:absolute;bottom:0px;left:0px;width:50%;height:50%";
+                    break;
+                default:
+                    style = "position:absolute;bottom:0px;right:0px;width:50%;height:50%";
+                    break;
             }
-        }
 
-        foreach (var element in dashboardData.SingleReadouts)
-        {
-            for (int x = element.TopLeftColumnNumber; x <= element.BottomRightColumnNumber; x++)
-            {
-                for (int y = element.TopLeftRowNumber; y <= element.BottomRightRowNumber; y++)
-                {
-                    cellsCovered[x, y] = true;
-                }
-            }
-        }
-
-        foreach (var element in dashboardData.DisplayTables)
-        {
-            for (int x = element.TopLeftColumnNumber; x <= element.BottomRightColumnNumber; x++)
-            {
-                for (int y = element.TopLeftRowNumber; y <= element.BottomRightRowNumber; y++)
-                {
-                    cellsCovered[x, y] = true;
-                }
-            }
-        }
-
-        foreach (var element in dashboardData.TitleRows)
-        {
-            for (int x = element.TopLeftColumnNumber; x <= element.BottomRightColumnNumber; x++)
-            {
-                for (int y = element.TopLeftRowNumber; y <= element.BottomRightRowNumber; y++)
-                {
-                    cellsCovered[x, y] = true;
-                }
-            }
-        }
-
-        if (dashboardData.HostingInfoFooter != null)
-        {
-            for (int x = 0; x < dashboardData.NumberOfColumns; x++)
-            {
-                for (int y = dashboardData.HostingInfoFooter.BottomRightRowNumber; y <= dashboardData.HostingInfoFooter.TopLeftRowNumber; y++)
-                {
-                    cellsCovered[x, y] = true;
-                }
-            }
-        }
-
-        float height = 100 * (1 / (float)dashboardData.NumberOfRows);
-
-        for (int y = 0; y < dashboardData.NumberOfRows; y++)
-        {
-            <tr style="height:@(height+"%");max-height:@(height+"%");;min-height:@(height+"%");">
-                @for (int x = 0; x < dashboardData.NumberOfColumns; x++)
-                {
-                    if (cellsCovered[x, y])
-                    {
-                        if (dashboardData.HostingInfoFooter != null && dashboardData.HostingInfoFooter.TopLeftRowNumber == y && x == 0)
-                        {
-                            int colspan = dashboardData.NumberOfColumns;
-                            int rowspan = (dashboardData.HostingInfoFooter.BottomRightRowNumber - dashboardData.HostingInfoFooter.TopLeftRowNumber) + 1;
-                            <td colspan=@colspan rowspan=@rowspan style="text-align:center;background-color:@dashboardData.TitleRowBackgroundColour;@GenerateBorderStyle(dashboardData.BorderColour, x, y, x + colspan - 1, y + rowspan - 1)">
-                                <span> Updates Every @updateIntervalInSeconds Seconds </span>
-                                <span style="float:left; position: relative; left: 25px"> Hosted On: @Environment.MachineName </span>
-                                <span style="float:right; position: relative; right: 25px"> Last Update Check: @lastUpdated.TimeOfDay.ToString().Split('.')[0] </span>
-                            </td>
-                            continue;
-                        }
-
-                        TitleRow? row = dashboardData.TitleRows.Where(title => title.TopLeftColumnNumber == x && title.TopLeftRowNumber == y).FirstOrDefault();
-
-                        if (row != null)
-                        {
-                            int colspan = (row.BottomRightColumnNumber - row.TopLeftColumnNumber) + 1;
-                            int rowspan = (row.BottomRightRowNumber - row.TopLeftRowNumber) + 1;
-                            string style = "text-align:" + (row.Align == null ? "center" : row.Align) + ";padding-left:20px;padding-right:20px;background-color:" + dashboardData.TitleRowBackgroundColour + ";" + GenerateBorderStyle(dashboardData.BorderColour, x, y, x + colspan - 1, y + rowspan - 1) + ";" + ((row.Title == null || row.Title.Colour == "default") ? "" : "color:" + row.Title.Colour);
-                            <td colspan=@colspan rowspan=@rowspan style=@style>
-                                <span>
-                                    <strong>@row.Title?.Text</strong>
-                                </span>
-                            </td>
-                            continue;
-                        }
-
-                        DisplayTable? displayTable = dashboardData.DisplayTables.Where(title => title.TopLeftColumnNumber == x && title.TopLeftRowNumber == y).FirstOrDefault();
-
-                        if (displayTable != null)
-                        {
-                            int colspan = (displayTable.BottomRightColumnNumber - displayTable.TopLeftColumnNumber) + 1;
-                            int rowspan = (displayTable.BottomRightRowNumber - displayTable.TopLeftRowNumber) + 1;
-                            <td colspan=@colspan rowspan=@rowspan style="overflow-y:hidden;text-align:center;vertical-align:text-top;background-color:@dashboardData.BackgroundColour;@GenerateBorderStyle(dashboardData.BorderColour, x, y, x + colspan - 1, y + rowspan - 1)">
-                                <div style="width:100%;height:0px;">
-                                    <table style="display:flex;flex-direction: row;align-items: stretch;width:100%;vertical-align:text-top;table-layout:fixed;padding:10px;border-collapse:collapse">
-                                        <tbody style="width:100%">
-                                            <tr style="display:flex;flex-direction: row;align-items: stretch;width:100%;">
-                                                @for (int i = 0; i < displayTable.headers.Count(); i++)
-                                                {
-                                                    string style = "padding:10px;width:100%;vertical-align:top;text-align:" + (i == 0 ? "left" : "right") + (displayTable.headers[i].Colour == "default" ? "" : ";color:" + displayTable.headers[i].Colour);
-                                                    <td style=@style>@displayTable.headers[i].Text</td>
-                                                }
-                                            </tr>
-                                            @foreach (var tableRow in displayTable.dataRows)
-                                            {
-                                                <tr style="display:flex;flex-direction: row;align-items: stretch;width:100%;">
-                                                    @for (int i = 0; i < tableRow.Count(); i++)
-                                                    {
-                                                        string style = "padding:10px;width:100%;vertical-align:top;text-align:" + (i == 0 ? "left" : "right") + (tableRow[i].Colour == "default" ? "" : ";color:" + tableRow[i].Colour);
-                                                        <td style=@style>@tableRow[i].Text</td>
-                                                    }
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </td>
-                            continue;
-                        }
-
-                        SingleReadOutRow? singleReadOutRow = dashboardData.SingleReadouts.Where(title => title.TopLeftColumnNumber == x && title.TopLeftRowNumber == y).FirstOrDefault();
-
-                        if (singleReadOutRow != null)
-                        {
-                            int colspan = (singleReadOutRow.BottomRightColumnNumber - singleReadOutRow.TopLeftColumnNumber) + 1;
-                            int rowspan = (singleReadOutRow.BottomRightRowNumber - singleReadOutRow.TopLeftRowNumber) + 1;
-                            <td colspan=@colspan rowspan=@rowspan style="text-align:center;background-color:@dashboardData.BackgroundColour;@GenerateBorderStyle(dashboardData.BorderColour, x, y, x + colspan - 1, y + rowspan - 1)">
-
-                                <table style="width:100%;table-layout:fixed">
-                                    <tr>
-                                        @foreach (var element in singleReadOutRow.ReadOuts)
-                                        {
-                                            string style = element.Title == null || element.Title.Colour == "default" ? "" : "color:" + element.Title.Colour;
-                                            <td style=@style>@element.Title?.Text</td>
-                                        }
-                                    </tr>
-                                    <tr>
-                                        @foreach (var element in singleReadOutRow.ReadOuts)
-                                        {
-                                            string style = element.Value == null || element.Value.Colour == "default" ? "" : "color:" + element.Value.Colour;
-                                            <td style=@style>@element.Value?.Text</td>
-                                        }
-                                    </tr>
-                                </table>
-                            </td>
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        string xValue = "C" + x;
-                        string yValue = "R" + y;
-                        // this will generate a black and white checker board pattern for blank cells
-                        string blankCellStyle = "text-align:center;" + ((x + y) % 2 == 0 ? "background-color:black;color:white" : "background-color:white;color:black");
-                        <td colspan="1" rowspan="1" style=@blankCellStyle> <span>@xValue @yValue</span> </td>
-                    }
-                }
-            </tr>
+            <iframe id="inlineFrameExample"
+                title="Inline Frame Example"
+                src=@src
+                style=@style
+            >
+            </iframe>
         }
     }
-</table>
 
-@if (errorMessage != null)
-{
-    <div style="background-color: red;display:flex;align-items:center;justify-content:center;position:absolute; top:calc(50% - 150px);bottom:calc(50% - 150px); width:100%; height: 300px; text-align: center;">
-        <span style="color: white; font-size:70px;"> @errorMessage </span>
-    </div>
+
 }
 
+@if (dashboardData != null)
+{
+    <table style="border-collapse:collapse;width:100%;height:100%;padding:0px;margin:0px;position:absolute;left:0px;top:0px;table-layout:fixed;border-color:@dashboardData.BorderColour;color:@dashboardData.TextColour">
+        @{
+            bool[,] cellsCovered = new bool[dashboardData.NumberOfColumns, dashboardData.NumberOfRows];
+
+            for (int x = 0; x < cellsCovered.GetLength(0); x++)
+            {
+                for (int y = 0; y < cellsCovered.GetLength(1); y++)
+                {
+                    cellsCovered[x, y] = false;
+                }
+            }
+
+            foreach (var element in dashboardData.SingleReadouts)
+            {
+                for (int x = element.TopLeftColumnNumber; x <= element.BottomRightColumnNumber; x++)
+                {
+                    for (int y = element.TopLeftRowNumber; y <= element.BottomRightRowNumber; y++)
+                    {
+                        cellsCovered[x, y] = true;
+                    }
+                }
+            }
+
+            foreach (var element in dashboardData.DisplayTables)
+            {
+                for (int x = element.TopLeftColumnNumber; x <= element.BottomRightColumnNumber; x++)
+                {
+                    for (int y = element.TopLeftRowNumber; y <= element.BottomRightRowNumber; y++)
+                    {
+                        cellsCovered[x, y] = true;
+                    }
+                }
+            }
+
+            foreach (var element in dashboardData.TitleRows)
+            {
+                for (int x = element.TopLeftColumnNumber; x <= element.BottomRightColumnNumber; x++)
+                {
+                    for (int y = element.TopLeftRowNumber; y <= element.BottomRightRowNumber; y++)
+                    {
+                        cellsCovered[x, y] = true;
+                    }
+                }
+            }
+
+            if (dashboardData.HostingInfoFooter != null)
+            {
+                for (int x = 0; x < dashboardData.NumberOfColumns; x++)
+                {
+                    for (int y = dashboardData.HostingInfoFooter.BottomRightRowNumber; y <= dashboardData.HostingInfoFooter.TopLeftRowNumber; y++)
+                    {
+                        cellsCovered[x, y] = true;
+                    }
+                }
+            }
+
+            float height = 100 * (1 / (float)dashboardData.NumberOfRows);
+
+            for (int y = 0; y < dashboardData.NumberOfRows; y++)
+            {
+                                            <tr style="height:@(height+"%");max-height:@(height+"%");;min-height:@(height+"%");">
+                                                @for (int x = 0; x < dashboardData.NumberOfColumns; x++)
+                    {
+                        if (cellsCovered[x, y])
+                        {
+                            if (dashboardData.HostingInfoFooter != null && dashboardData.HostingInfoFooter.TopLeftRowNumber == y && x == 0)
+                            {
+                                int colspan = dashboardData.NumberOfColumns;
+                                int rowspan = (dashboardData.HostingInfoFooter.BottomRightRowNumber - dashboardData.HostingInfoFooter.TopLeftRowNumber) + 1;
+                                                            <td colspan=@colspan rowspan=@rowspan style="text-align:center;background-color:@dashboardData.TitleRowBackgroundColour;@GenerateBorderStyle(dashboardData.BorderColour, x, y, x + colspan - 1, y + rowspan - 1)">
+                                                                <span> Updates Every @updateIntervalInSeconds Seconds </span>
+                                                                <span style="float:left; position: relative; left: 25px"> Hosted On: @Environment.MachineName </span>
+                                                                <span style="float:right; position: relative; right: 25px"> Last Update Check: @lastUpdated.TimeOfDay.ToString().Split('.')[0] </span>
+                                                            </td>
+                                continue;
+                            }
+
+                            TitleRow? row = dashboardData.TitleRows.Where(title => title.TopLeftColumnNumber == x && title.TopLeftRowNumber == y).FirstOrDefault();
+
+                            if (row != null)
+                            {
+                                int colspan = (row.BottomRightColumnNumber - row.TopLeftColumnNumber) + 1;
+                                int rowspan = (row.BottomRightRowNumber - row.TopLeftRowNumber) + 1;
+                                string style = "text-align:" + (row.Align == null ? "center" : row.Align) + ";padding-left:20px;padding-right:20px;background-color:" + dashboardData.TitleRowBackgroundColour + ";" + GenerateBorderStyle(dashboardData.BorderColour, x, y, x + colspan - 1, y + rowspan - 1) + ";" + ((row.Title == null || row.Title.Colour == "default") ? "" : "color:" + row.Title.Colour);
+                                                            <td colspan=@colspan rowspan=@rowspan style=@style>
+                                                                <span>
+                                                                    <strong>@row.Title?.Text</strong>
+                                                                </span>
+                                                            </td>
+                                continue;
+                            }
+
+                            DisplayTable? displayTable = dashboardData.DisplayTables.Where(title => title.TopLeftColumnNumber == x && title.TopLeftRowNumber == y).FirstOrDefault();
+
+                            if (displayTable != null)
+                            {
+                                int colspan = (displayTable.BottomRightColumnNumber - displayTable.TopLeftColumnNumber) + 1;
+                                int rowspan = (displayTable.BottomRightRowNumber - displayTable.TopLeftRowNumber) + 1;
+                                                            <td colspan=@colspan rowspan=@rowspan style="overflow-y:hidden;text-align:center;vertical-align:text-top;background-color:@dashboardData.BackgroundColour;@GenerateBorderStyle(dashboardData.BorderColour, x, y, x + colspan - 1, y + rowspan - 1)">
+                                                                <div style="width:100%;height:0px;">
+                                                                    <table style="display:flex;flex-direction: row;align-items: stretch;width:100%;vertical-align:text-top;table-layout:fixed;padding:10px;border-collapse:collapse">
+                                                                        <tbody style="width:100%">
+                                                                            <tr style="display:flex;flex-direction: row;align-items: stretch;width:100%;">
+                                                                                @for (int i = 0; i < displayTable.headers.Count(); i++)
+                                                    {
+                                                        string style = "padding:10px;width:100%;vertical-align:top;text-align:" + (i == 0 ? "left" : "right") + (displayTable.headers[i].Colour == "default" ? "" : ";color:" + displayTable.headers[i].Colour);
+                                                                                    <td style=@style>@displayTable.headers[i].Text</td>
+                                                    }
+                                                                            </tr>
+                                                                            @foreach (var tableRow in displayTable.dataRows)
+                                                {
+                                                                                <tr style="display:flex;flex-direction: row;align-items: stretch;width:100%;">
+                                                                                    @for (int i = 0; i < tableRow.Count(); i++)
+                                                        {
+                                                            string style = "padding:10px;width:100%;vertical-align:top;text-align:" + (i == 0 ? "left" : "right") + (tableRow[i].Colour == "default" ? "" : ";color:" + tableRow[i].Colour);
+                                                                                        <td style=@style>@tableRow[i].Text</td>
+                                                        }
+                                                                                </tr>
+                                                }
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </td>
+                                continue;
+                            }
+
+                            SingleReadOutRow? singleReadOutRow = dashboardData.SingleReadouts.Where(title => title.TopLeftColumnNumber == x && title.TopLeftRowNumber == y).FirstOrDefault();
+
+                            if (singleReadOutRow != null)
+                            {
+                                int colspan = (singleReadOutRow.BottomRightColumnNumber - singleReadOutRow.TopLeftColumnNumber) + 1;
+                                int rowspan = (singleReadOutRow.BottomRightRowNumber - singleReadOutRow.TopLeftRowNumber) + 1;
+                                                            <td colspan=@colspan rowspan=@rowspan style="text-align:center;background-color:@dashboardData.BackgroundColour;@GenerateBorderStyle(dashboardData.BorderColour, x, y, x + colspan - 1, y + rowspan - 1)">
+
+                                                                <table style="width:100%;table-layout:fixed">
+                                                                    <tr>
+                                                                        @foreach (var element in singleReadOutRow.ReadOuts)
+                                            {
+                                                string style = element.Title == null || element.Title.Colour == "default" ? "" : "color:" + element.Title.Colour;
+                                                                            <td style=@style>@element.Title?.Text</td>
+                                            }
+                                                                    </tr>
+                                                                    <tr>
+                                                                        @foreach (var element in singleReadOutRow.ReadOuts)
+                                            {
+                                                string style = element.Value == null || element.Value.Colour == "default" ? "" : "color:" + element.Value.Colour;
+                                                                            <td style=@style>@element.Value?.Text</td>
+                                            }
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            string xValue = "C" + x;
+                            string yValue = "R" + y;
+                            // this will generate a black and white checker board pattern for blank cells
+                            string blankCellStyle = "text-align:center;" + ((x + y) % 2 == 0 ? "background-color:black;color:white" : "background-color:white;color:black");
+                                                        <td colspan="1" rowspan="1" style=@blankCellStyle> <span>@xValue @yValue</span> </td>
+                        }
+                    }
+                                            </tr>
+            }
+        }
+    </table>
+
+    @if (errorMessage != null)
+    {
+        <div style="background-color: red;display:flex;align-items:center;justify-content:center;position:absolute; top:calc(50% - 150px);bottom:calc(50% - 150px); width:100%; height: 300px; text-align: center;">
+            <span style="color: white; font-size:70px;"> @errorMessage </span>
+        </div>
+    }
+}
 @code {
     [Parameter]
     public string? pageName { get; set; }
@@ -192,48 +231,54 @@
     private string? errorMessage = "API Call Failed";
 
     protected override void OnInitialized()
-    {        
-        // get data for inital page load
-        FetchData();
+    {
+        if (dashboardData != null)
+        {
+            // get data for inital page load
+            FetchData();
 
-        // create background job to poll the api for updates regually
-        updateTimer = new System.Timers.Timer(updateIntervalInSeconds * 500);
-        updateTimer.Elapsed += FetchData;
-        updateTimer.Enabled = true;
+            // create background job to poll the api for updates regually
+            updateTimer = new System.Timers.Timer(updateIntervalInSeconds * 500);
+            updateTimer.Elapsed += FetchData;
+            updateTimer.Enabled = true;
+        }
     }
 
     public void FetchData(object? source = null, System.Timers.ElapsedEventArgs? e = null)
     {
-        if (pageName == null)
+        if (dashboardData != null)
         {
-            pageName = "default";
-        }
-        else
-        {
-            pageName = pageName.ToLower();
-        }
+            if (pageName == null)
+            {
+                pageName = "default";
+            }
+            else
+            {
+                pageName = pageName.ToLower();
+            }
 
-        if (!GlobalData.PageData.ContainsKey(pageName))
-        {
-            dashboardData = new DataTransferObject();
-            errorMessage = "No data for page name";
-        }
-        else
-        {
-            dashboardData = GlobalData.PageData.GetValueOrDefault(pageName).DashboardData;
-            errorMessage = GlobalData.PageData.GetValueOrDefault(pageName).ErrorMessage;
-        }
+            if (!GlobalData.PageData.ContainsKey(pageName))
+            {
+                dashboardData = new DataTransferObject();
+                errorMessage = "No data for page name";
+            }
+            else
+            {
+                dashboardData = GlobalData.PageData.GetValueOrDefault(pageName).DashboardData;
+                errorMessage = GlobalData.PageData.GetValueOrDefault(pageName).ErrorMessage;
+            }
 
-        if (dashboardData.ErrorMessage != null)
-        {
-            errorMessage = dashboardData.ErrorMessage;
-        }
+            if (dashboardData?.ErrorMessage != null)
+            {
+                errorMessage = dashboardData.ErrorMessage;
+            }
 
-        lastUpdated = DateTime.Now;
+            lastUpdated = DateTime.Now;
 
-        if (source != null)
-        {
-            InvokeAsync(StateHasChanged);
+            if (source != null)
+            {
+                InvokeAsync(StateHasChanged);
+            }
         }
     }
 
