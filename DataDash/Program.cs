@@ -1,22 +1,30 @@
 using DataDash;
 using DataDash.Models;
 using Newtonsoft.Json;
-using System.Linq;
-using System.Threading;
 
-#if DEBUG
+// Still works (with "Pages__" prepended) but not needed anymore, will override appsettings if used done this way
+//#if DEBUG
 
-Environment.SetEnvironmentVariable("default", "UrlToPoll=http://localhost:5013/WeatherForecast;IntervalBetweenUpdatesInSeconds=2;HttpAuthHeaderScheme=bearer;HttpAuthHeaderValue=sfghwrewfrgrtt2w");
-Environment.SetEnvironmentVariable("data", "UrlToPoll=http://localhost:5013/Test;IntervalBetweenUpdatesInSeconds=2;HttpAuthHeaderScheme=bearer;HttpAuthHeaderValue=sfghwrewfrgrtt2w");
+//Environment.SetEnvironmentVariable("Pages__default", "UrlToPoll=http://localhost:5013/WeatherForecast;IntervalBetweenUpdatesInSeconds=2;HttpAuthHeaderScheme=bearer;HttpAuthHeaderValue=sfghwrewfrgrtt2w");
+//Environment.SetEnvironmentVariable("Pages__data", "UrlToPoll=http://localhost:5013/Test;IntervalBetweenUpdatesInSeconds=2;HttpAuthHeaderScheme=bearer;HttpAuthHeaderValue=sfghwrewfrgrtt2w");
 
-Environment.SetEnvironmentVariable("pageName", "ms=default,data,data,pageName");
-#endif
+//Environment.SetEnvironmentVariable("Pages__pageName", "ms=default,data,data,pageName");
+//#endif
 
-var variables = Environment.GetEnvironmentVariables();
+var builder = WebApplication.CreateBuilder(args);
 
-foreach(string key in variables.Keys)
+builder.Host.ConfigureAppConfiguration((hostingContext, config) =>
 {
-    string? value = Environment.GetEnvironmentVariable(key);
+    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                        .AddEnvironmentVariables();
+});
+
+var variables = builder.Configuration.GetSection("Pages").Get<Dictionary<string, string>>();
+
+foreach (string key in variables.Keys)
+{
+    string? value = variables[key];
 
     if (value != null)
     {
@@ -107,7 +115,6 @@ foreach(string key in variables.Keys)
     }
 }
 
-var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
