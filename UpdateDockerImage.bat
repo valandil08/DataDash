@@ -1,3 +1,5 @@
+docker login dockerregistry.runeclawgames.com
+
 docker build -f DataDash\Dockerfile . -t dockerregistry.runeclawgames.com/datadashserver
 docker build -f TestWebApi\Dockerfile . -t dockerregistry.runeclawgames.com/datadashapi
 
