@@ -1,8 +1,8 @@
-docker build -f DataDash\Dockerfile . -t dockerregistry.sameplesite.com/datadashserver
-docker build -f TestWebApi\Dockerfile . -t dockerregistry.sameplesite.com/datadashapi
+docker build -f DataDash\Dockerfile . -t dockerregistry.runeclawgames.com/datadashserver
+docker build -f TestWebApi\Dockerfile . -t dockerregistry.runeclawgames.com/datadashapi
 
-REM docker image push dockerregistry.sameplesite.com/datadashserver
-REM docker image push dockerregistry.sameplesite.com/datadashapi
+docker image push dockerregistry.runeclawgames.com/datadashserver
+docker image push dockerregistry.runeclawgames.com/datadashapi
 
 
 @pause
