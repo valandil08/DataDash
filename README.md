@@ -2,7 +2,7 @@
  
 Data Dash is designed to minimimise the impact of a common problem faced with expanding software systems, the need for more monitoring dashboards and the additional work required to maintain then.
 
-Making sure code changes don't break your monitoring tools and keeping your monitoring tools update with systems changes to display correct data are time sinks that any large scale project will enounter eventually and this is where DataDash shines.
+Making sure code changes don't break your monitoring tools and keeping your monitoring tools update with systems changes to display correct data are time sinks that any large scale project will eventually enounter and this is where DataDash shines.
 
 To reduce the changes of code changes breaking the monitoring tools and remove the need to update your monitoring tools seperately from the product, DataDash calls a web api endpoint implemented in the product being monitored and requires the UI design be stored in code as part of the data transfer object being returned to the dashboard.
 
